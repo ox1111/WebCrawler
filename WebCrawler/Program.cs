@@ -21,18 +21,6 @@ namespace WebCrawler
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Form1());
-
-            //Console.WriteLine("Hello World");
-            //string url = "https://arachnode.net/media/g/releases/default.aspx";
-
-            //HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(url);
-            //request.UserAgent = "A .NET Web Crawler";
-            //WebResponse response = request.GetResponse();
-            //Stream stream = response.GetResponseStream();
-            //StreamReader reader = new StreamReader(stream);
-            //string htmlText = reader.ReadToEnd();
-            //Console.WriteLine(htmlText);
-
         }
 
        

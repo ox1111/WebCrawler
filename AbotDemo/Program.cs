@@ -15,10 +15,9 @@ namespace AbotDemo
     {
         static void Main(string[] args)
         {
-            //log4net.Config.XmlConfigurator.Configure();
 
             CrawlConfiguration crawlConfig = new CrawlConfiguration();
-            //crawlConfig.DownloadableContentTypes = "text/html, text/plain";
+            
             crawlConfig.CrawlTimeoutSeconds = 100;
             crawlConfig.MaxConcurrentThreads = 1;
             crawlConfig.MaxPagesToCrawl = 1;
@@ -26,13 +25,14 @@ namespace AbotDemo
 
             PoliteWebCrawler crawler = new PoliteWebCrawler(crawlConfig);
 
+            
             crawler.PageCrawlStartingAsync += crawler_ProcessPageCrawlStarting;
             crawler.PageCrawlCompletedAsync += crawler_ProcessPageCrawlCompleted;
-            crawler.PageCrawlDisallowedAsync += crawler_PageCrawlDisallowed;
-            crawler.PageLinksCrawlDisallowedAsync += crawler_PageLinksCrawlDisallowed;
+            //crawler.PageCrawlDisallowedAsync += crawler_PageCrawlDisallowed;
+            //crawler.PageLinksCrawlDisallowedAsync += crawler_PageLinksCrawlDisallowed;
 
             CrawlResult result = crawler.Crawl(new Uri("http://www.kmhk.kmu.edu.tw/news/list.asp?P_classify=9")); //This is synchronous, it will not go to the next line until the crawl has completed
-
+            
             if (result.ErrorOccurred)
                 Console.WriteLine("Crawl of {0} completed with error: {1}", result.RootUri.AbsoluteUri, result.ErrorException.Message);
             else
@@ -44,11 +44,14 @@ namespace AbotDemo
         static void crawler_ProcessPageCrawlStarting(object sender, PageCrawlStartingArgs e)
         {
             PageToCrawl pageToCrawl = e.PageToCrawl;
-            Console.WriteLine("About to crawl link {0} which was found on page {1}", pageToCrawl.Uri.AbsoluteUri, pageToCrawl.ParentUri.AbsoluteUri);
+            
+            //Console.WriteLine("About to crawl link {0} which was found on page {1}", pageToCrawl.Uri.AbsoluteUri, pageToCrawl.ParentUri.AbsoluteUri);
+
         }
 
         static void crawler_ProcessPageCrawlCompleted(object sender, PageCrawlCompletedArgs e)
         {
+           
             CrawledPage crawledPage = e.CrawledPage;
 
             if (crawledPage.WebException != null || crawledPage.HttpWebResponse.StatusCode != HttpStatusCode.OK)
@@ -59,15 +62,16 @@ namespace AbotDemo
             if (string.IsNullOrEmpty(crawledPage.Content.Text))
                 Console.WriteLine("Page had no content {0}", crawledPage.Uri.AbsoluteUri);
 
-            HtmlDocument htmlAgilityPackDocument = crawledPage.HtmlDocument; //Html Agility Pack parser
+            var htmlAgilityPackDocument = crawledPage.HtmlDocument; //Html Agility Pack parser
             var angleSharpHtmlDocument = crawledPage.AngleSharpHtmlDocument; //AngleSharp parser
 
-            HtmlNodeCollection table = htmlAgilityPackDocument.DocumentNode.SelectNodes("//table");
 
-            foreach (HtmlNode node in table)
+            HtmlNodeCollection keywordContent = htmlAgilityPackDocument.DocumentNode.SelectNodes("//*[text()[contains(., '小港醫院')]]");
+
+
+            foreach (HtmlNode node in keywordContent)
             {
-                string strValue = node.InnerText;  //擷取字串
-                Console.WriteLine(strValue);
+                Console.WriteLine(node.InnerText);
             }
 
 
@@ -84,5 +88,10 @@ namespace AbotDemo
             PageToCrawl pageToCrawl = e.PageToCrawl;
             Console.WriteLine("Did not crawl page {0} due to {1}", pageToCrawl.Uri.AbsoluteUri, e.DisallowedReason);
         }
+
+
+
     }
+
+    
 }
