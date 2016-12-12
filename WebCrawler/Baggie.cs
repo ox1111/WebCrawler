@@ -27,7 +27,8 @@ namespace WebCrawler
         public Baggie(int keywordCount, int websiteCount, List<string> keywordList, List<string> websiteList) {
             today = DateTime.Today;
 
-            textWritter = File.CreateText(Application.StartupPath + "\\OutputReport\\" + today.ToString("yyyy-dd-MM") +".csv");
+            textWritter = new StreamWriter(Application.StartupPath + "\\OutputReport\\" + today.ToString("yyyy-dd-MM") +".csv", true, Encoding.UTF8);
+
             KeywordList = keywordList;
             WebsiteList = websiteList;
             KeywordCount = keywordCount;
@@ -51,7 +52,7 @@ namespace WebCrawler
             if (CombineTable != null)
             {
                 var csv = new CsvWriter(textWritter);
-                csv.Configuration.Encoding = Encoding.UTF8;
+                csv.Configuration.Encoding =Encoding.GetEncoding("utf-8");
                 foreach (DataColumn column in CombineTable.Columns)
                 {
                     csv.WriteField(column.ColumnName);
@@ -67,12 +68,6 @@ namespace WebCrawler
                     csv.NextRecord();
                 }
             }
-
-
-            //if (CombineTable != null)
-            //{
-            //    CombineTable.WriteXml(textWritter);
-            //}
 
             textWritter.Close();
             return outputName;
