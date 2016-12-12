@@ -28,8 +28,10 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.label39 = new System.Windows.Forms.Label();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.label9 = new System.Windows.Forms.Label();
             this.textBox8 = new System.Windows.Forms.TextBox();
@@ -122,6 +124,10 @@
             this.button2 = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.textBox7 = new System.Windows.Forms.TextBox();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.label40 = new System.Windows.Forms.Label();
+            this.label41 = new System.Windows.Forms.Label();
+            this.button3 = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -156,6 +162,8 @@
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.label41);
+            this.tabPage1.Controls.Add(this.label39);
             this.tabPage1.Controls.Add(this.groupBox3);
             this.tabPage1.Controls.Add(this.groupBox2);
             this.tabPage1.Controls.Add(this.groupBox1);
@@ -168,6 +176,18 @@
             this.tabPage1.Text = "tabPage1";
             this.tabPage1.UseVisualStyleBackColor = true;
             this.tabPage1.Click += new System.EventHandler(this.tabPage1_Click);
+            // 
+            // label39
+            // 
+            this.label39.AutoSize = true;
+            this.label39.BackColor = System.Drawing.Color.Red;
+            this.label39.Font = new System.Drawing.Font("PMingLiU", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label39.Location = new System.Drawing.Point(757, 183);
+            this.label39.Name = "label39";
+            this.label39.Size = new System.Drawing.Size(121, 20);
+            this.label39.TabIndex = 8;
+            this.label39.Text = "Task off going ";
+            this.label39.Click += new System.EventHandler(this.label39_Click);
             // 
             // groupBox3
             // 
@@ -1111,11 +1131,45 @@
             this.textBox7.Size = new System.Drawing.Size(507, 25);
             this.textBox7.TabIndex = 6;
             // 
+            // timer1
+            // 
+            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            // 
+            // label40
+            // 
+            this.label40.AutoSize = true;
+            this.label40.Location = new System.Drawing.Point(113, 457);
+            this.label40.Name = "label40";
+            this.label40.Size = new System.Drawing.Size(0, 15);
+            this.label40.TabIndex = 7;
+            // 
+            // label41
+            // 
+            this.label41.AutoSize = true;
+            this.label41.BackColor = System.Drawing.Color.Aquamarine;
+            this.label41.Location = new System.Drawing.Point(757, 222);
+            this.label41.Name = "label41";
+            this.label41.Size = new System.Drawing.Size(111, 15);
+            this.label41.TabIndex = 9;
+            this.label41.Text = "No File Generated";
+            // 
+            // button3
+            // 
+            this.button3.Location = new System.Drawing.Point(914, 25);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(179, 23);
+            this.button3.TabIndex = 8;
+            this.button3.Text = "Open output file path";
+            this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.button3_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1269, 497);
+            this.Controls.Add(this.button3);
+            this.Controls.Add(this.label40);
             this.Controls.Add(this.textBox7);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.button2);
@@ -1127,6 +1181,7 @@
             this.Text = "Form1";
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
+            this.tabPage1.PerformLayout();
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
             this.groupBox2.ResumeLayout(false);
@@ -1255,6 +1310,11 @@
         private System.Windows.Forms.Label label37;
         private System.Windows.Forms.Label label38;
         private System.Windows.Forms.TextBox textBox37;
+        private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.Label label39;
+        private System.Windows.Forms.Label label40;
+        private System.Windows.Forms.Label label41;
+        private System.Windows.Forms.Button button3;
     }
 }
 

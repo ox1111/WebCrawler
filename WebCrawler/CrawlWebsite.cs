@@ -11,7 +11,9 @@ using System.Net;
 using System.Data;
 using CsvHelper;
 using System.IO;
-
+using Abot.Core;
+using System.IO.Compression;
+using System.Text.RegularExpressions;
 
 namespace WebCrawler
 {
@@ -20,21 +22,26 @@ namespace WebCrawler
         public List<string> keywordList;
         public List<string> targetList;
         
-        public CrawlWebsite(IEnumerable<TextBox> keywordCollection, IEnumerable<TextBox> targetCollectionn) {
+        public CrawlWebsite(IEnumerable<TextBox> keywordCollection, IEnumerable<TextBox> targetCollectionn,Label outputLabel) {
 
-           
-            PoliteWebCrawler crawler;
-            CrawlResult result;
-            CrawlConfiguration crawlConfig = new CrawlConfiguration();
-            
+            WebClient url = new WebClient();
+            HtmlAgilityPack.HtmlDocument doc;
 
-            crawlConfig.CrawlTimeoutSeconds = 100;
-            crawlConfig.MaxConcurrentThreads = 1;
-            crawlConfig.MaxPagesToCrawl = 1;
-            
-
+            HtmlNodeCollection keywordContent;
             keywordList = new List<string>();
             targetList = new List<string>();
+            DataTable crawlTable;
+            Baggie myBag;
+            //MemoryStream ms ;
+
+            crawlTable = new DataTable("crawlTable");
+            doc = new HtmlAgilityPack.HtmlDocument();
+            
+
+            crawlTable.Columns.Add("id", typeof(int));
+            crawlTable.Columns.Add("關鍵字", typeof(string));
+            crawlTable.Columns.Add("內容", typeof(string));
+            crawlTable.Columns.Add("From", typeof(string));
 
             foreach (TextBox item in keywordCollection)
             {
@@ -48,100 +55,152 @@ namespace WebCrawler
                     targetList.Add(item.Text);
             }
 
+            myBag = new Baggie(keywordList.Count, targetList.Count, keywordList, targetList);
 
-            crawler = new PoliteWebCrawler(crawlConfig);
 
-            //crawler.CrawlBag.MyStream = new TextStream("D:");
 
             foreach (string keyword in keywordList)
             {
                 foreach (string web in targetList)
                 {
-                    crawler.CrawlBag.MyBaggie = new Baggie(keyword);
-                    crawler.PageCrawlStartingAsync += crawler_ProcessPageCrawlStarting;
-                    crawler.PageCrawlCompletedAsync += crawler_ProcessPageCrawlCompleted;
-                    result = crawler.Crawl(new Uri(web));
-                    crawler = new PoliteWebCrawler(crawlConfig);
+                    
+                    HttpDownloader downloader = new HttpDownloader(web, null, null);
+                    doc.LoadHtml(downloader.GetPage());
+                    keywordContent = doc.DocumentNode.SelectNodes("//*[text()[contains(., '" + keyword + "')]]");
+
+                    if (keywordContent != null) { 
+                    crawlTable = myBag.generateTable(keywordContent, crawlTable, keyword, web);
+                    myBag.combineTable(crawlTable);
+                    }
                 }
             }
-            
+
+
+            outputLabel.Text = myBag.generateReport();
         }
 
-        
-
-        static void crawler_ProcessPageCrawlStarting(object sender, PageCrawlStartingArgs e)
+        public class HttpDownloader
         {
-            PageToCrawl pageToCrawl = e.PageToCrawl;
-            Console.WriteLine("About to crawl link {0} which was found on page {1}", pageToCrawl.Uri.AbsoluteUri, pageToCrawl.ParentUri.AbsoluteUri);
-        }
+            private readonly string _referer;
+            private readonly string _userAgent;
 
-        static void crawler_ProcessPageCrawlCompleted(object sender, PageCrawlCompletedArgs e)
-        {
-            int counter = 0;
-            DataRow row;
-            CrawledPage crawledPage = e.CrawledPage;
-            CrawlContext context = e.CrawlContext;
-            string keyword;
-            //StreamWriter textWritter;
-            DataTable crawlTable;
+            public Encoding Encoding { get; set; }
+            public WebHeaderCollection Headers { get; set; }
+            public Uri Url { get; set; }
 
-            if (crawledPage.WebException != null || crawledPage.HttpWebResponse.StatusCode != HttpStatusCode.OK)
-                Console.WriteLine("Crawl of page failed {0}", crawledPage.Uri.AbsoluteUri);
-            else
-                Console.WriteLine("Crawl of page succeeded {0}", crawledPage.Uri.AbsoluteUri);
-
-            if (string.IsNullOrEmpty(crawledPage.Content.Text))
-                Console.WriteLine("Page had no content {0}", crawledPage.Uri.AbsoluteUri);
-
-            var htmlAgilityPackDocument = crawledPage.HtmlDocument; //Html Agility Pack parser
-            var angleSharpHtmlDocument = crawledPage.AngleSharpHtmlDocument; //AngleSharp parser
-
-            // Get attribute from bag
-            keyword = context.CrawlBag.MyBaggie.getBaggie();
-            //textWritter = context.CrawlBag.MyStream.getTextStream();
-            //crawlTable = context.CrawlBag.MyStream.getDataTable();
-            crawlTable = new DataTable("crawlTable");
-            crawlTable.Columns.Add("id", typeof(int));
-            crawlTable.Columns.Add("關鍵字", typeof(string));
-            crawlTable.Columns.Add("內容", typeof(string));
-
-
-            // Search keyword
-            HtmlNodeCollection keywordContent = htmlAgilityPackDocument.DocumentNode.SelectNodes("//*[text()[contains(., '" + keyword + "')]]");
-
-            // Generate output log
-            foreach (HtmlNode node in keywordContent)
+            public HttpDownloader(string url, string referer, string userAgent)
             {
-                row = crawlTable.NewRow();
-                row["id"] = counter++;
-                row["關鍵字"] = keyword;
-                row["內容"] = node.InnerText;
-                crawlTable.Rows.Add(row);
-                Console.WriteLine(node.InnerText);
+                Encoding = Encoding.GetEncoding("ISO-8859-1");
+                Url = new Uri(url); // verify the uri
+                _userAgent = userAgent;
+                _referer = referer;
             }
-           
 
-            crawlTable.WriteXml(Application.StartupPath +"\\" + keyword + ".xml");
-            //var csv = new CsvWriter(textWritter);
+            public string GetPage()
+            {
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Url);
+                if (!string.IsNullOrEmpty(_referer))
+                    request.Referer = _referer;
+                if (!string.IsNullOrEmpty(_userAgent))
+                    request.UserAgent = _userAgent;
 
-            //foreach (DataColumn column in crawlTable.Columns)
-            //{
-            //    csv.WriteField(column.ColumnName);
-            //}
-            //csv.NextRecord();
+                request.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip,deflate");
 
-            //foreach (DataRow temprow in crawlTable.Rows)
-            //{
-            //    for (var i = 0; i < crawlTable.Columns.Count; i++)
-            //    {
-            //        csv.WriteField(temprow[i]);
-            //    }
-            //    csv.NextRecord();
-            //}
+                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                {
+                    Headers = response.Headers;
+                    Url = response.ResponseUri;
+                    return ProcessContent(response);
+                }
 
-            //textWritter.Close();
+            }
+
+            private string ProcessContent(HttpWebResponse response)
+            {
+                SetEncodingFromHeader(response);
+
+                Stream s = response.GetResponseStream();
+                if (response.ContentEncoding.ToLower().Contains("gzip"))
+                    s = new GZipStream(s, CompressionMode.Decompress);
+                else if (response.ContentEncoding.ToLower().Contains("deflate"))
+                    s = new DeflateStream(s, CompressionMode.Decompress);
+
+                MemoryStream memStream = new MemoryStream();
+                int bytesRead;
+                byte[] buffer = new byte[0x1000];
+                for (bytesRead = s.Read(buffer, 0, buffer.Length); bytesRead > 0; bytesRead = s.Read(buffer, 0, buffer.Length))
+                {
+                    memStream.Write(buffer, 0, bytesRead);
+                }
+                s.Close();
+                string html;
+                memStream.Position = 0;
+                using (StreamReader r = new StreamReader(memStream, Encoding))
+                {
+                    html = r.ReadToEnd().Trim();
+                    html = CheckMetaCharSetAndReEncode(memStream, html);
+                }
+
+                return html;
+            }
+
+            private void SetEncodingFromHeader(HttpWebResponse response)
+            {
+                string charset = null;
+                if (string.IsNullOrEmpty(response.CharacterSet))
+                {
+                    Match m = Regex.Match(response.ContentType, @";\s*charset\s*=\s*(?<charset>.*)", RegexOptions.IgnoreCase);
+                    if (m.Success)
+                    {
+                        charset = m.Groups["charset"].Value.Trim(new[] { '\'', '"' });
+                    }
+                }
+                else
+                {
+                    charset = response.CharacterSet;
+                }
+                if (!string.IsNullOrEmpty(charset))
+                {
+                    try
+                    {
+                        Encoding = Encoding.GetEncoding(charset);
+                    }
+                    catch (ArgumentException)
+                    {
+                    }
+                }
+            }
+
+            private string CheckMetaCharSetAndReEncode(Stream memStream, string html)
+            {
+                Match m = new Regex(@"<meta\s+.*?charset\s*=\s*(?<charset>[A-Za-z0-9_-]+)", RegexOptions.Singleline | RegexOptions.IgnoreCase).Match(html);
+                if (m.Success)
+                {
+                    string charset = m.Groups["charset"].Value.ToLower() ?? "iso-8859-1";
+                    if ((charset == "unicode") || (charset == "utf-16"))
+                    {
+                        charset = "utf-8";
+                    }
+
+                    try
+                    {
+                        Encoding metaEncoding = Encoding.GetEncoding(charset);
+                        if (Encoding != metaEncoding)
+                        {
+                            memStream.Position = 0L;
+                            StreamReader recodeReader = new StreamReader(memStream, metaEncoding);
+                            html = recodeReader.ReadToEnd().Trim();
+                            recodeReader.Close();
+                        }
+                    }
+                    catch (ArgumentException)
+                    {
+                    }
+                }
+
+                return html;
+            }
         }
-
 
     }
 }
