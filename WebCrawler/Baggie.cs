@@ -8,6 +8,7 @@ using System.Data;
 using System.IO;
 using System.Windows.Forms;
 using CsvHelper;
+using System.Data.SqlClient;
 
 namespace WebCrawler
 {
@@ -68,8 +69,8 @@ namespace WebCrawler
                     csv.NextRecord();
                 }
             }
-
-            textWritter.Close();
+            textWritter.Dispose();
+            //textWritter.Close();
             return outputName;
         }
 
