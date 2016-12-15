@@ -18,8 +18,10 @@ namespace WebCrawler
     {
         public IEnumerable<TextBox> keywordCollection;
         public IEnumerable<TextBox> targetCollection;
+        public IEnumerable<GroupBox> groupBoxCollection;
         public CrawlWebsite crawler;
         public DateTime timeVar;
+        public TabPage selectedTab;
         public Form1()
         {
             InitializeComponent();
@@ -39,8 +41,8 @@ namespace WebCrawler
         private void button1_Click(object sender, EventArgs e)
         {
             
-            targetCollection = groupBox1.Controls.OfType<TextBox>();
-            keywordCollection = groupBox2.Controls.OfType<TextBox>();
+            targetCollection = WebGroupBox1.Controls.OfType<TextBox>();
+            keywordCollection = keywordGB1.Controls.OfType<TextBox>();
             crawler = new CrawlWebsite(keywordCollection, targetCollection,this.label41);
             this.label39.BackColor = Color.LightGreen;
             this.label39.Text = "Task On Going";
@@ -69,6 +71,31 @@ namespace WebCrawler
         {
             
             Process.Start(Application.StartupPath + "\\OutputReport");
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+
+            for (int i = 0; i < 10; i++)
+            {
+                selectedTab = tabControl1.TabPages[i];
+                GroupBox webGPB = (GroupBox)selectedTab.Controls.Find("WebGroupBox"+(i+1), true)[0];
+                GroupBox keywordGPB = (GroupBox)selectedTab.Controls.Find("keywordGB" + (i + 1), true)[0];
+                MessageBox.Show(webGPB.Text+"," + keywordGPB.Text);
+            }
+            
+            
+            //foreach (TextBox item in gpb.Controls.OfType<TextBox>())
+            //{
+            //    MessageBox.Show(item.Name);
+            //}
+
+
+        }
+
+        private void groupBox23_Enter(object sender, EventArgs e)
+        {
+
         }
     }
 }

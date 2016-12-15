@@ -9,6 +9,7 @@ using System.IO;
 using System.Windows.Forms;
 using CsvHelper;
 using System.Data.SqlClient;
+using System.Windows.Forms;
 
 namespace WebCrawler
 {
@@ -22,13 +23,10 @@ namespace WebCrawler
         List<string> KeywordList;
         List<string> WebsiteList;
         DateTime today;
+        DialogResult msgBox;
 
-
-
-        public Baggie(int keywordCount, int websiteCount, List<string> keywordList, List<string> websiteList) {
-            today = DateTime.Today;
-
-            textWritter = new StreamWriter(Application.StartupPath + "\\OutputReport\\" + today.ToString("yyyy-dd-MM") +".csv", true, Encoding.UTF8);
+        public Baggie(int keywordCount, int websiteCount, List<string> keywordList, List<string> websiteList)
+        {
 
             KeywordList = keywordList;
             WebsiteList = websiteList;
@@ -40,41 +38,15 @@ namespace WebCrawler
             CombineTable.Columns.Add("關鍵字", typeof(string));
             CombineTable.Columns.Add("內容", typeof(string));
             CombineTable.Columns.Add("From", typeof(string));
-
         }
 
-        public void combineTable(DataTable table) {
+        public void combineTable(DataTable table)
+        {
             CombineTable.Merge(table);
         }
 
-        public string generateReport() {
-            string outputName = today.ToString("yyyy-dd-MM") + ".xml";
-
-            if (CombineTable != null)
-            {
-                var csv = new CsvWriter(textWritter);
-                csv.Configuration.Encoding =Encoding.GetEncoding("utf-8");
-                foreach (DataColumn column in CombineTable.Columns)
-                {
-                    csv.WriteField(column.ColumnName);
-                }
-                csv.NextRecord();
-
-                foreach (DataRow temprow in CombineTable.Rows)
-                {
-                    for (var i = 0; i < CombineTable.Columns.Count; i++)
-                    {
-                        csv.WriteField(temprow[i]);
-                    }
-                    csv.NextRecord();
-                }
-            }
-            textWritter.Dispose();
-            //textWritter.Close();
-            return outputName;
-        }
-
-        public DataTable generateTable(HtmlNodeCollection keywordHtml, DataTable crawlTable, string keyword,string web) {
+        public DataTable generateTable(HtmlNodeCollection keywordHtml, DataTable crawlTable, string keyword, string web)
+        {
             DataRow row;
             int counter = 1;
 
@@ -91,6 +63,57 @@ namespace WebCrawler
             return crawlTable;
         }
 
+        public string generateReport()
+        {
+            today = DateTime.Today;
+
+            #region Set Stream (try...catch)
+            try
+            {
+                textWritter = new StreamWriter(Application.StartupPath + "\\OutputReport\\" + today.ToString("yyyy-dd-MM") + ".csv", false, Encoding.UTF8);
+            }
+            catch (IOException)
+            {
+                msgBox = MessageBox.Show("Turn Off Exsistence File!!! Otherwise the file will not be saved!!","Warning!!!",MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+                if (msgBox == DialogResult.Yes)
+                {
+                    textWritter = new StreamWriter(Application.StartupPath + "\\OutputReport\\" + today.ToString("yyyy-dd-MM") + ".csv", false, Encoding.UTF8);
+
+                }
+                else if(msgBox == DialogResult.No)
+                {
+                    return null;
+                }
+            }
+            #endregion
+
+            string outputName = today.ToString("yyyy-dd-MM") + ".xml";
+
+            if (CombineTable != null)
+            {
+                var csv = new CsvWriter(textWritter);
+                csv.Configuration.Encoding = Encoding.GetEncoding("utf-8");
+                foreach (DataColumn column in CombineTable.Columns)
+                {
+                    csv.WriteField(column.ColumnName);
+                }
+                csv.NextRecord();
+
+                foreach (DataRow temprow in CombineTable.Rows)
+                {
+                    for (var i = 0; i < CombineTable.Columns.Count; i++)
+                    {
+                        csv.WriteField(temprow[i]);
+                    }
+                    csv.NextRecord();
+                }
+            }
+            textWritter.Dispose();
+
+            return outputName;
+
+        }
 
     }
 }
