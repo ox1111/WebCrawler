@@ -22,6 +22,10 @@ namespace WebCrawler
         public CrawlWebsite crawler;
         public DateTime timeVar;
         public TabPage selectedTab;
+        GroupBox webGPB;
+        GroupBox keywordGPB;
+
+
         public Form1()
         {
             InitializeComponent();
@@ -41,12 +45,8 @@ namespace WebCrawler
         private void button1_Click(object sender, EventArgs e)
         {
             
-            targetCollection = WebGroupBox1.Controls.OfType<TextBox>();
-            keywordCollection = keywordGB1.Controls.OfType<TextBox>();
-            crawler = new CrawlWebsite(keywordCollection, targetCollection,this.label41);
-            this.label39.BackColor = Color.LightGreen;
-            this.label39.Text = "Task On Going";
-            timer1.Start();
+           
+            
         }
 
         private void label39_Click(object sender, EventArgs e)
@@ -69,7 +69,7 @@ namespace WebCrawler
 
         private void button3_Click(object sender, EventArgs e)
         {
-            
+            //MessageBox.Show(Application.StartupPath);
             Process.Start(Application.StartupPath + "\\OutputReport");
         }
 
@@ -79,17 +79,20 @@ namespace WebCrawler
             for (int i = 0; i < 10; i++)
             {
                 selectedTab = tabControl1.TabPages[i];
-                GroupBox webGPB = (GroupBox)selectedTab.Controls.Find("WebGroupBox"+(i+1), true)[0];
-                GroupBox keywordGPB = (GroupBox)selectedTab.Controls.Find("keywordGB" + (i + 1), true)[0];
-                MessageBox.Show(webGPB.Text+"," + keywordGPB.Text);
-            }
-            
-            
-            //foreach (TextBox item in gpb.Controls.OfType<TextBox>())
-            //{
-            //    MessageBox.Show(item.Name);
-            //}
+                webGPB = (GroupBox)selectedTab.Controls.Find("WebGroupBox"+(i+1), true)[0];
+                keywordGPB = (GroupBox)selectedTab.Controls.Find("keywordGB" + (i + 1), true)[0];
 
+                targetCollection = webGPB.Controls.OfType<TextBox>();
+                keywordCollection = keywordGPB.Controls.OfType<TextBox>();
+
+                crawler = new CrawlWebsite(keywordCollection, targetCollection, this.label41);
+                crawler.SetFilename = selectedTab.Text;
+                crawler.Crawl();
+                
+            }
+            this.label39.BackColor = Color.LightGreen;
+            this.label39.Text = "Task On Going";
+            timer1.Start();
 
         }
 

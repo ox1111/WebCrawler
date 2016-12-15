@@ -1,5 +1,5 @@
-### Requirement 1
-* Implement multiple tab pages (Limit: 10 tag pages/program)
+### ~~Requirement 1~~
+* ~~Implement multiple tab pages (Limit: 10 tag pages/program)~~
 
 ### Requirement 2
 * Implement "Save settings"

@@ -21,28 +21,22 @@ namespace WebCrawler
     {
         public List<string> keywordList;
         public List<string> targetList;
-        
+        string Filename="";
+        Baggie MyBag;
+        HtmlNodeCollection keywordContent;
+        HtmlAgilityPack.HtmlDocument doc;
+        Label OutputLabel;
+
         public CrawlWebsite(IEnumerable<TextBox> keywordCollection, IEnumerable<TextBox> targetCollectionn,Label outputLabel) {
 
-            WebClient url = new WebClient();
-            HtmlAgilityPack.HtmlDocument doc;
+            //url = new WebClient();
 
-            HtmlNodeCollection keywordContent;
+            OutputLabel = outputLabel;
+
             keywordList = new List<string>();
             targetList = new List<string>();
-            DataTable crawlTable;
-            Baggie myBag;
-            //MemoryStream ms ;
-
-            crawlTable = new DataTable("crawlTable");
-            doc = new HtmlAgilityPack.HtmlDocument();
             
-
-            crawlTable.Columns.Add("id", typeof(int));
-            crawlTable.Columns.Add("關鍵字", typeof(string));
-            crawlTable.Columns.Add("內容", typeof(string));
-            crawlTable.Columns.Add("From", typeof(string));
-
+            
             foreach (TextBox item in keywordCollection)
             {
                 if(item.Text!="")
@@ -55,28 +49,40 @@ namespace WebCrawler
                     targetList.Add(item.Text);
             }
 
-            myBag = new Baggie(keywordList.Count, targetList.Count, keywordList, targetList);
+        }
 
+        public string SetFilename
+        {
+            get { return Filename; }
+            set { Filename = value; }
+        }
 
+        public void Crawl() {
 
-            foreach (string keyword in keywordList)
+            if (keywordList.Count != 0 && targetList.Count != 0)
             {
-                foreach (string web in targetList)
-                {
-                    
-                    HttpDownloader downloader = new HttpDownloader(web, null, null);
-                    doc.LoadHtml(downloader.GetPage());
-                    keywordContent = doc.DocumentNode.SelectNodes("//*[text()[contains(., '" + keyword + "')]]");
+                doc = new HtmlAgilityPack.HtmlDocument();
+                MyBag = new Baggie();
 
-                    if (keywordContent != null) { 
-                    crawlTable = myBag.generateTable(keywordContent, crawlTable, keyword, web);
-                    myBag.combineTable(crawlTable);
+                foreach (string keyword in keywordList)
+                {
+                    foreach (string web in targetList)
+                    {
+
+                        HttpDownloader downloader = new HttpDownloader(web, null, null);
+                        doc.LoadHtml(downloader.GetPage());
+                        keywordContent = doc.DocumentNode.SelectNodes("//*[text()[contains(., '" + keyword + "')]]");
+
+                        if (keywordContent != null)
+                        {
+                            MyBag.generateTable(keywordContent, keyword, web);
+                        }
                     }
                 }
+
+                OutputLabel.Text = MyBag.generateReport(Filename);
             }
 
-
-            outputLabel.Text = myBag.generateReport();
         }
 
         public class HttpDownloader
@@ -202,8 +208,6 @@ namespace WebCrawler
             }
         }
 
-
-        
 
     }
 }

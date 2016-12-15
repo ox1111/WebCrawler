@@ -15,62 +15,52 @@ namespace WebCrawler
 {
     public class Baggie
     {
-        int KeywordCount;
-        int WebsiteCount;
+        
 
         DataTable CombineTable;
         StreamWriter textWritter;
-        List<string> KeywordList;
-        List<string> WebsiteList;
         DateTime today;
         DialogResult msgBox;
+        string Filename;
+        int counter = 1;
 
-        public Baggie(int keywordCount, int websiteCount, List<string> keywordList, List<string> websiteList)
+        public Baggie()
         {
-
-            KeywordList = keywordList;
-            WebsiteList = websiteList;
-            KeywordCount = keywordCount;
-            WebsiteCount = websiteCount;
-
             CombineTable = new DataTable("crawlTable");
             CombineTable.Columns.Add("id", typeof(int));
-            CombineTable.Columns.Add("關鍵字", typeof(string));
-            CombineTable.Columns.Add("內容", typeof(string));
+            CombineTable.Columns.Add("Keyword", typeof(string));
+            CombineTable.Columns.Add("Content", typeof(string));
             CombineTable.Columns.Add("From", typeof(string));
         }
 
-        public void combineTable(DataTable table)
-        {
-            CombineTable.Merge(table);
-        }
 
-        public DataTable generateTable(HtmlNodeCollection keywordHtml, DataTable crawlTable, string keyword, string web)
+        public void generateTable(HtmlNodeCollection keywordHtml, string keyword, string web)
         {
             DataRow row;
-            int counter = 1;
+            
 
             foreach (HtmlNode node in keywordHtml)
             {
-                row = crawlTable.NewRow();
+                row = CombineTable.NewRow();
                 row["id"] = counter++;
-                row["關鍵字"] = keyword;
-                row["內容"] = node.InnerText;
+                row["Keyword"] = keyword;
+                row["Content"] = node.InnerText;
                 row["From"] = web;
-                crawlTable.Rows.Add(row);
+                CombineTable.Rows.Add(row);
                 Console.WriteLine(node.InnerText);
             }
-            return crawlTable;
+           
         }
 
-        public string generateReport()
+        public string generateReport(string filename)
         {
             today = DateTime.Today;
+            Filename = filename+ "-" + today.ToString("yyyy-dd-MM") + ".csv";
 
             #region Set Stream (try...catch)
             try
             {
-                textWritter = new StreamWriter(Application.StartupPath + "\\OutputReport\\" + today.ToString("yyyy-dd-MM") + ".csv", false, Encoding.UTF8);
+                textWritter = new StreamWriter(Application.StartupPath + "\\OutputReport\\" + Filename, false, Encoding.UTF8);
             }
             catch (IOException)
             {
@@ -78,7 +68,7 @@ namespace WebCrawler
 
                 if (msgBox == DialogResult.Yes)
                 {
-                    textWritter = new StreamWriter(Application.StartupPath + "\\OutputReport\\" + today.ToString("yyyy-dd-MM") + ".csv", false, Encoding.UTF8);
+                    textWritter = new StreamWriter(Application.StartupPath + "\\OutputReport\\" + Filename, false, Encoding.UTF8);
 
                 }
                 else if(msgBox == DialogResult.No)
@@ -88,7 +78,6 @@ namespace WebCrawler
             }
             #endregion
 
-            string outputName = today.ToString("yyyy-dd-MM") + ".xml";
 
             if (CombineTable != null)
             {
@@ -111,7 +100,7 @@ namespace WebCrawler
             }
             textWritter.Dispose();
 
-            return outputName;
+            return Filename;
 
         }
 
