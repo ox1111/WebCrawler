@@ -4,8 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Abot.Crawler;
-using Abot.Poco;
 using HtmlAgilityPack;
 using System.Net;
 using System.Data;
@@ -14,6 +12,7 @@ using System.IO;
 using Abot.Core;
 using System.IO.Compression;
 using System.Text.RegularExpressions;
+using Newtonsoft.Json;
 
 namespace WebCrawler
 {
@@ -24,8 +23,10 @@ namespace WebCrawler
         string Filename="";
         Baggie MyBag;
         HtmlNodeCollection keywordContent;
+        string title;
         HtmlAgilityPack.HtmlDocument doc;
         Label OutputLabel;
+        DataTable CrawledTable;
 
         public CrawlWebsite(IEnumerable<TextBox> keywordCollection, IEnumerable<TextBox> targetCollectionn,Label outputLabel) {
 
@@ -57,6 +58,11 @@ namespace WebCrawler
             set { Filename = value; }
         }
 
+        public DataTable getTable
+        {
+            get {return CrawledTable; }
+        }
+
         public void Crawl() {
 
             if (keywordList.Count != 0 && targetList.Count != 0)
@@ -72,18 +78,29 @@ namespace WebCrawler
                         HttpDownloader downloader = new HttpDownloader(web, null, null);
                         doc.LoadHtml(downloader.GetPage());
                         keywordContent = doc.DocumentNode.SelectNodes("//*[text()[contains(., '" + keyword + "')]]");
+                        title = doc.DocumentNode.SelectSingleNode("//title/text()").InnerText;
+                        
 
-                        if (keywordContent != null)
+                        if (keywordContent!=null)
                         {
-                            MyBag.generateTable(keywordContent, keyword, web);
+                            if (keywordContent.Count != 0) {
+                                MyBag.addRowToTable(keywordContent, keyword, web, title);
+                            }
                         }
                     }
                 }
 
                 OutputLabel.Text = MyBag.generateReport(Filename);
+
+                if (MyBag.Table!=null) {
+                    CrawledTable = MyBag.Table;
+                }
+                
             }
 
         }
+
+        
 
         public class HttpDownloader
         {

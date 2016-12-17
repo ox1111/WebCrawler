@@ -9,7 +9,9 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Threading;
 using System.Diagnostics;
-
+using Newtonsoft.Json;
+using System.IO;
+using Newtonsoft.Json.Linq;
 
 namespace WebCrawler
 {
@@ -22,9 +24,20 @@ namespace WebCrawler
         public CrawlWebsite crawler;
         public DateTime timeVar;
         public TabPage selectedTab;
+        public DataTable fullTable;
         GroupBox webGPB;
         GroupBox keywordGPB;
+        List<RootObject> JsonDB;
+        DataTable dtDB;
 
+        public class RootObject
+        {
+            public int id { get; set; }
+            public string Keyword { get; set; }
+            public string Content { get; set; }
+            public string From { get; set; }
+            public string Title { get; set; }
+        }
 
         public Form1()
         {
@@ -75,6 +88,13 @@ namespace WebCrawler
 
         private void button4_Click(object sender, EventArgs e)
         {
+            fullTable = new DataTable("crawlTable");
+            fullTable.Columns.Add("id", typeof(int));
+            fullTable.Columns.Add("Keyword", typeof(string));
+            fullTable.Columns.Add("Content", typeof(string));
+            fullTable.Columns.Add("From", typeof(string));
+            fullTable.Columns.Add("Title", typeof(string));
+
 
             for (int i = 0; i < 10; i++)
             {
@@ -88,17 +108,39 @@ namespace WebCrawler
                 crawler = new CrawlWebsite(keywordCollection, targetCollection, this.label41);
                 crawler.SetFilename = selectedTab.Text;
                 crawler.Crawl();
-                
+
+                if (crawler.getTable!=null) {
+                    fullTable.Merge(crawler.getTable);
+                }
             }
+
+
+            string str_json = JsonConvert.SerializeObject(fullTable);
+            Console.WriteLine(str_json);
+
+            File.WriteAllText(Application.StartupPath + "\\OutputReport" + "\\fullTable.json", str_json);
+
             this.label39.BackColor = Color.LightGreen;
             this.label39.Text = "Task On Going";
             timer1.Start();
-
         }
 
         private void groupBox23_Enter(object sender, EventArgs e)
         {
 
         }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            string text = File.ReadAllText(Application.StartupPath + "\\OutputReport" + "\\fullTable.json");
+            JsonDB = JsonConvert.DeserializeObject<List<RootObject>>(text);
+            dtDB = Utilities.ToDataTable(JsonDB);
+
+        }
+
+        
+
     }
+
+    
 }
