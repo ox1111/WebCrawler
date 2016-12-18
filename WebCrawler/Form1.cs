@@ -261,9 +261,12 @@ namespace WebCrawler
                     selectedTab = tabControl1.TabPages[i];
                     webGPB = (GroupBox)selectedTab.Controls.Find("WebGroupBox" + (i + 1), true)[0];
                     keywordGPB = (GroupBox)selectedTab.Controls.Find("keywordGB" + (i + 1), true)[0];
+                    mailListGPB = (GroupBox)selectedTab.Controls.Find("mailGPB" + (i + 1), true)[0];
 
                     targetCollection = webGPB.Controls.OfType<TextBox>();
                     keywordCollection = keywordGPB.Controls.OfType<TextBox>();
+                    mailListCollection = mailListGPB.Controls.OfType<TextBox>();
+                    mailList = Utilities.TextBoxListToList(mailListCollection);
 
                     crawler = new CrawlWebsite(keywordCollection, targetCollection, this.label41);
                     crawler.SetFilename = selectedTab.Text;
@@ -272,7 +275,11 @@ namespace WebCrawler
 
                     if (crawler.getTable != null)
                     {
-                        fullTable.Merge(crawler.getTable);
+                        if (crawler.getTable.Rows.Count>0)
+                        { 
+                            Utilities.SendMailByGmail(mailList, Utilities.TextBoxListToList(keywordCollection), Utilities.getHTML(crawler.getTable));
+                            fullTable.Merge(crawler.getTable);
+                        }
                     }
                 }
 
@@ -298,7 +305,7 @@ namespace WebCrawler
             Process.Start(Application.StartupPath + "\\OutputReport");
         }
 
-        private void button4_Click(object sender, EventArgs e)
+        private void Go_Click(object sender, EventArgs e)
         {
             
 
@@ -328,10 +335,13 @@ namespace WebCrawler
                 crawler.Crawl();
 
                 if (crawler.getTable!=null) {
-
-                    Utilities.SendMailByGmail(mailList, Utilities.TextBoxListToList(keywordCollection), Utilities.getHTML(crawler.getTable));
-                    fullTable.Merge(crawler.getTable);
+                    if (crawler.getTable.Rows.Count > 0)
+                    {
+                        Utilities.SendMailByGmail(mailList, Utilities.TextBoxListToList(keywordCollection), Utilities.getHTML(crawler.getTable));
+                        fullTable.Merge(crawler.getTable);
+                    }
                 }
+
             }
 
             if (fullTable.Rows.Count>0) { 

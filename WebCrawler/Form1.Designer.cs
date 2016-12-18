@@ -376,7 +376,7 @@
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.label40 = new System.Windows.Forms.Label();
             this.button3 = new System.Windows.Forms.Button();
-            this.button4 = new System.Windows.Forms.Button();
+            this.Go = new System.Windows.Forms.Button();
             this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -3953,15 +3953,15 @@
             this.button3.UseVisualStyleBackColor = true;
             this.button3.Click += new System.EventHandler(this.button3_Click);
             // 
-            // button4
+            // Go
             // 
-            this.button4.Location = new System.Drawing.Point(1135, 460);
-            this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(75, 23);
-            this.button4.TabIndex = 9;
-            this.button4.Text = "Go!";
-            this.button4.UseVisualStyleBackColor = true;
-            this.button4.Click += new System.EventHandler(this.button4_Click);
+            this.Go.Location = new System.Drawing.Point(1135, 460);
+            this.Go.Name = "Go";
+            this.Go.Size = new System.Drawing.Size(75, 23);
+            this.Go.TabIndex = 9;
+            this.Go.Text = "Go!";
+            this.Go.UseVisualStyleBackColor = true;
+            this.Go.Click += new System.EventHandler(this.Go_Click);
             // 
             // dateTimePicker1
             // 
@@ -3978,7 +3978,7 @@
             this.Controls.Add(this.dateTimePicker1);
             this.Controls.Add(this.label41);
             this.Controls.Add(this.label39);
-            this.Controls.Add(this.button4);
+            this.Controls.Add(this.Go);
             this.Controls.Add(this.button3);
             this.Controls.Add(this.label40);
             this.Controls.Add(this.label2);
@@ -4411,7 +4411,7 @@
         private System.Windows.Forms.Label label154;
         private System.Windows.Forms.Label label155;
         private System.Windows.Forms.TextBox textBox145;
-        private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.Button Go;
         private System.Windows.Forms.DateTimePicker dateTimePicker1;
     }
 }
