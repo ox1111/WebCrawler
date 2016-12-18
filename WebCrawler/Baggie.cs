@@ -21,18 +21,27 @@ namespace WebCrawler
         DataTable CombineTable;
         StreamWriter textWritter;
         DateTime today;
-        DialogResult msgBox;
+        public DataTable DtDB = null;
         string Filename;
         int counter = 1;
+        bool dbExists = false;
 
-        public Baggie()
+        public Baggie(DataTable dtDB)
         {
-            CombineTable = new DataTable("crawlTable");
+            CombineTable = new DataTable();
             CombineTable.Columns.Add("id", typeof(int));
             CombineTable.Columns.Add("Keyword", typeof(string));
             CombineTable.Columns.Add("Content", typeof(string));
             CombineTable.Columns.Add("From", typeof(string));
             CombineTable.Columns.Add("Title", typeof(string));
+            DtDB = dtDB;
+
+            if (DtDB!=null) { 
+                if (DtDB.Rows.Count>0) {
+                    dbExists = true;
+                }
+            }
+
         }
 
 
@@ -44,18 +53,30 @@ namespace WebCrawler
         public void addRowToTable(HtmlNodeCollection keywordHtml, string keyword, string web,string title)
         {
             DataRow row;
-            
+            bool exists = false;
+
 
             foreach (HtmlNode node in keywordHtml)
             {
-                row = CombineTable.NewRow();
-                row["id"] = counter++;
-                row["Keyword"] = keyword;
-                row["Content"] = node.InnerText;
-                row["From"] = web;
-                row["Title"] = title;
-                CombineTable.Rows.Add(row);
-                //Console.WriteLine(node.InnerText);
+
+                if (dbExists) {
+                    exists = DtDB.AsEnumerable().Any(c => c.Field<string>("Content") == node.InnerText);
+                }
+
+                if (exists == false)
+                {
+                    row = CombineTable.NewRow();
+                    row["id"] = counter++;
+                    row["Keyword"] = keyword;
+                    row["Content"] = node.InnerText;
+                    row["From"] = web;
+                    row["Title"] = title;
+                    CombineTable.Rows.Add(row);
+                    if (dbExists)
+                    {
+                        DtDB.Rows.Add(row.ItemArray);
+                    }
+                }
             }
            
         }
@@ -87,30 +108,6 @@ namespace WebCrawler
                     textWritter.Dispose();
                 }
             }
-
-            #region Set Stream (try...catch)
-            //try
-            //{
-
-            //}
-            //catch (IOException)
-            //{
-            //    msgBox = MessageBox.Show("Turn Off Exsistence File!!! Otherwise the file will not be saved!!", "Warning!!!", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-
-            //    if (msgBox == DialogResult.Yes)
-            //    {
-            //        textWritter = new StreamWriter(Application.StartupPath + "\\OutputReport\\" + Filename, false, Encoding.UTF8);
-
-            //    }
-            //    else if (msgBox == DialogResult.No)
-            //    {
-            //        return null;
-            //    }
-            //}
-            #endregion
-
-
-
             return Filename;
 
         }

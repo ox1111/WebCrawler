@@ -27,13 +27,10 @@ namespace WebCrawler
         HtmlAgilityPack.HtmlDocument doc;
         Label OutputLabel;
         DataTable CrawledTable;
+        public DataTable dtDB = null;
 
         public CrawlWebsite(IEnumerable<TextBox> keywordCollection, IEnumerable<TextBox> targetCollectionn,Label outputLabel) {
-
-            //url = new WebClient();
-
             OutputLabel = outputLabel;
-
             keywordList = new List<string>();
             targetList = new List<string>();
             
@@ -52,6 +49,11 @@ namespace WebCrawler
 
         }
 
+        public void SetDataTableDB(DataTable dt)
+        {
+            dtDB = dt;
+        }
+
         public string SetFilename
         {
             get { return Filename; }
@@ -68,23 +70,21 @@ namespace WebCrawler
             if (keywordList.Count != 0 && targetList.Count != 0)
             {
                 doc = new HtmlAgilityPack.HtmlDocument();
-                MyBag = new Baggie();
+                MyBag = new Baggie(dtDB);
 
                 foreach (string keyword in keywordList)
                 {
                     foreach (string web in targetList)
                     {
-
                         HttpDownloader downloader = new HttpDownloader(web, null, null);
                         doc.LoadHtml(downloader.GetPage());
                         keywordContent = doc.DocumentNode.SelectNodes("//*[text()[contains(., '" + keyword + "')]]");
                         title = doc.DocumentNode.SelectSingleNode("//title/text()").InnerText;
                         
-
                         if (keywordContent!=null)
                         {
                             if (keywordContent.Count != 0) {
-                                MyBag.addRowToTable(keywordContent, keyword, web, title);
+                              MyBag.addRowToTable(keywordContent, keyword, web, title);
                             }
                         }
                     }
